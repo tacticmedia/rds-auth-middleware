@@ -1,0 +1,33 @@
+{
+    "name": "rds-auth-middleware",
+    "dockerComposeFile": [
+        "../compose.yaml"
+    ],
+    "service": "php",
+    "workspaceFolder": "/app",
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {}
+    },
+    "remoteUser": "root",
+    "postCreateCommand": "npm install -g intelephense && composer install",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "bmewburn.vscode-intelephense-client",
+                "xdebug.php-debug"
+            ],
+            "settings": {
+                "launch": {
+                    "version": "0.2.0",
+                    "configurations": [
+                        {
+                            "name": "Debug PHP",
+                            "type": "php",
+                            "request": "launch"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

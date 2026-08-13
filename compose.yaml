@@ -1,0 +1,77 @@
+---
+# Services for the development container. The integration profile adds the
+# services the tests/Integration suite connects to:
+#   docker compose --profile integration up -d --wait postgres mysql moto
+services:
+  postgres:
+    image: postgres:18
+    profiles:
+      - integration
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: app
+    ports:
+      - "55432:5432"
+    volumes:
+      - ./tests/Integration/docker/postgres-init.sh:/docker-entrypoint-initdb.d/10-ssl.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U admin -d app"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  # On a fresh checkout the daemon creates the gitignored mysql-export bind
+  # source owned by root, but mysql-init.sh writes the CA there as the
+  # unprivileged mysql user, so this one-shot opens the directory first.
+  mysql-export-init:
+    image: mysql:8.4
+    profiles:
+      - integration
+    entrypoint: ["chmod", "0777", "/mysql-export"]
+    volumes:
+      - ./tests/Integration/docker/mysql-export:/mysql-export
+
+  mysql:
+    image: mysql:8.4
+    profiles:
+      - integration
+    depends_on:
+      mysql-export-init:
+        condition: service_completed_successfully
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: app
+    ports:
+      - "53306:3306"
+    volumes:
+      - ./tests/Integration/docker/mysql-init.sh:/docker-entrypoint-initdb.d/10-export-ca.sh:ro
+      - ./tests/Integration/docker/mysql-export:/mysql-export
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -padmin --silent"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  moto:
+    image: motoserver/moto:5.2.2
+    profiles:
+      - integration
+    ports:
+      - "5566:5000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/moto-api/data.json')\""]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  php:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    restart: no
+    environment:
+      XDEBUG_MODE: "${XDEBUG_MODE:-develop,debug}"
+      XDEBUG_CONFIG: "client_host=127.0.0.1 start_with_request=yes"
+    volumes:
+      - .:/app

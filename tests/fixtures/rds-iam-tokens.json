@@ -1,0 +1,41 @@
+[
+    {
+        "name": "ap-southeast-2 basic",
+        "host": "db.example.com",
+        "port": 5432,
+        "region": "ap-southeast-2",
+        "username": "app",
+        "accessKeyId": "AKIDEXAMPLE",
+        "secretAccessKey": "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY",
+        "sessionToken": null,
+        "source": "aws-cli-2.36.14",
+        "xAmzDate": "20260814T014823Z",
+        "token": "db.example.com:5432/?Action=connect&DBUser=app&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIDEXAMPLE%2F20260814%2Fap-southeast-2%2Frds-db%2Faws4_request&X-Amz-Date=20260814T014823Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=508e623375778325fad4a6bc60a298bac7998a901de1619f1af525d3069107be"
+    },
+    {
+        "name": "us-east-1 username needing URL encoding",
+        "host": "cluster.cluster-abc123.us-east-1.rds.amazonaws.com",
+        "port": 5432,
+        "region": "us-east-1",
+        "username": "app+user@example.com",
+        "accessKeyId": "AKIDEXAMPLE",
+        "secretAccessKey": "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY",
+        "sessionToken": null,
+        "source": "aws-cli-2.36.14",
+        "xAmzDate": "20260814T014823Z",
+        "token": "cluster.cluster-abc123.us-east-1.rds.amazonaws.com:5432/?Action=connect&DBUser=app%2Buser%40example.com&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIDEXAMPLE%2F20260814%2Fus-east-1%2Frds-db%2Faws4_request&X-Amz-Date=20260814T014823Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=cc0f527b00af6c2ca0edfdc71c318b09aa35dda1f528dd6503c8391f3898390d"
+    },
+    {
+        "name": "eu-west-1 session token",
+        "host": "db.eu.example.com",
+        "port": 5433,
+        "region": "eu-west-1",
+        "username": "reader",
+        "accessKeyId": "ASIAEXAMPLESESSION",
+        "secretAccessKey": "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY",
+        "sessionToken": "IQoJb3JpZ2luX2VjEXAMPLESESSIONTOKEN/2029/token+with/slashes=",
+        "source": "aws-cli-2.36.14",
+        "xAmzDate": "20260814T014823Z",
+        "token": "db.eu.example.com:5433/?Action=connect&DBUser=reader&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAEXAMPLESESSION%2F20260814%2Feu-west-1%2Frds-db%2Faws4_request&X-Amz-Date=20260814T014823Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEXAMPLESESSIONTOKEN%2F2029%2Ftoken%2Bwith%2Fslashes%3D&X-Amz-Signature=ae2d616838147d06b50c33c71168af4d89d1184cb8ea50fc7100a5526849b862"
+    }
+]
