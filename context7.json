@@ -1,0 +1,13 @@
+{
+    "$schema": "https://context7.com/schema/context7.json",
+    "projectTitle": "RDS Auth Middleware",
+    "description": "Doctrine DBAL driver middleware for Amazon RDS: IAM token authentication and master-password refresh from Secrets Manager",
+    "folders": ["docs"],
+    "excludeFiles": ["CLAUDE.md"],
+    "rules": [
+        "Symfony applications should install tacticmedia/rds-auth-bundle instead of wiring this middleware manually",
+        "Requires PHP 8.4 or later and doctrine/dbal 4",
+        "Pass a shared PSR-6 cache pool in production; without one every connection signs a new IAM token",
+        "MySQL IAM authentication requires Pdo\\Mysql::ATTR_SSL_CA in driverOptions; RDS refuses IAM logins without TLS"
+    ]
+}
