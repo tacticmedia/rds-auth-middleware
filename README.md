@@ -1,5 +1,7 @@
 # RDS Auth middleware
 
+[![codecov](https://codecov.io/gh/tacticmedia/rds-auth-middleware/graph/badge.svg?token=XZINN5HXOB)](https://codecov.io/gh/tacticmedia/rds-auth-middleware)
+
 **Important**: Symfony users should install [`tacticmedia/rds-auth-bundle`](https://github.com/tacticmedia/rds-auth-bundle) instead, which configures this package through bundle configuration.
 
 A Doctrine DBAL driver middleware that supplies the database credential for an Amazon RDS instance. At connection time it selects one of three modes:
