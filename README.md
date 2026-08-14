@@ -1,16 +1,27 @@
-# rds-auth-middleware
+# RDS Auth middleware
+
+**Important**: Symfony users should install [`tacticmedia/rds-auth-bundle`](https://github.com/tacticmedia/rds-auth-bundle) instead, which configures this package through bundle configuration.
 
 A Doctrine DBAL driver middleware that supplies the database credential for an Amazon RDS instance. At connection time it selects one of three modes:
 
-- IAM username configured: replace the user and password with a short-lived [RDS IAM authentication token](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html).
-- Secret ARN configured: connect with the configured password; when the database rejects it, read the current password from Secrets Manager and retry once.
+- When **IAM username** is configured: replace the user and password with a short-lived [RDS IAM authentication token](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html).
+- When the **Secret ARN** configured: connect with the configured password; when the database rejects it, read the current password from Secrets Manager and retry once.
 - Neither configured: pass the connection parameters through unchanged.
 
-One build therefore runs in every environment, with either authentication mode or none.
+The **Secret ARN** mode exists to support automated RDS `ManageMasterUserPassword` rotation, which happens [every seven days by default](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html). Most deployments read the password into configuration once, at deployment time: Elastic Beanstalk `environmentsecrets`, an ECS task definition, a Kubernetes secret. Between the rotation and the next deployment or restart the configured password is invalid, and every connection attempt fails with `password authentication failed`. Reading the secret at connection time lets the application recover without a deployment. The only IAM permission this requires is `secretsmanager:GetSecretValue` on that one secret ARN.
 
-The secret mode exists because RDS rotates a `ManageMasterUserPassword` secret [every seven days by default](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html), while most deployments read the password into configuration once, at deployment time: Elastic Beanstalk `environmentsecrets`, an ECS task definition, a Kubernetes secret. Between the rotation and the next deployment or restart the configured password is invalid, and every connection attempt fails with `password authentication failed`. Reading the secret at connection time lets the application recover without a deployment. The only IAM permission this requires is `secretsmanager:GetSecretValue` on that one secret ARN.
+## A word of caution about the IAM authentication
 
-The middleware requires only Doctrine DBAL, not a framework. Symfony users should install [`tacticmedia/rds-auth-bundle`](https://packagist.org/packages/tacticmedia/rds-auth-bundle) instead, which configures this package through bundle configuration.
+RDS IAM authentication sounds like a no-brainer good decision: no passwords are always a good thing, right? Wrong.
+
+AWS writes in their [documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html):
+
+> IAM DB authentication requires compute resources on the database instance. You must have between 300 and 1000 MiB extra memory on your database for reliable connectivity. To see the memory needed for your workload, compare the RES column for RDS processes in the Enhanced Monitoring processlist before and after enabling IAM DB authentication. 
+
+In other words, enabling IAM Authentication involves resource overhead that will render small instances unusable. So, IAM
+authentication will often be unsuitable for small deployments, free tier environments and so on.
+
+That's why the other auth mode exists here: to enable using the managed password with automatic rotation. It's a step worse than no passwords at all, but it is a lot better than not rotating the password.  
 
 ## Installation
 
