@@ -21,4 +21,7 @@
             <directory>src</directory>
         </include>
     </source>
+    <logging>
+        <junit outputFile="coverage/junit.xml"/>
+    </logging>
 </phpunit>
