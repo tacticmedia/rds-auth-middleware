@@ -2,7 +2,7 @@
 
 ## Requirements
 
-PHP >= 8.4 and doctrine/dbal ^4.0. AWS calls go through AsyncAws; the official AWS SDK is not a dependency.
+PHP >= 8.3 and doctrine/dbal ^4.0. AWS calls go through AsyncAws; the official AWS SDK is not a dependency.
 
 ## Installation
 

@@ -15,5 +15,7 @@
 PDO MySQL configures TLS through `driverOptions`, not a connection parameter. RDS refuses IAM logins without TLS, so a missing TLS configuration fails closed. Point the CA option at the RDS certificate bundle:
 
 ```php
-$params['driverOptions'] = [\Pdo\Mysql::ATTR_SSL_CA => '/path/to/global-bundle.pem'];
+$params['driverOptions'] = [\PDO::MYSQL_ATTR_SSL_CA => '/path/to/global-bundle.pem'];
 ```
+
+On PHP 8.4 or later, `\Pdo\Mysql::ATTR_SSL_CA` names the same option; the `PDO::MYSQL_ATTR_SSL_CA` name is deprecated since PHP 8.5.

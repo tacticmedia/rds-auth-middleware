@@ -48,7 +48,7 @@ final readonly class RdsIamTokenGenerator
 
         $signedAt = $this->clock?->now() ?? new \DateTimeImmutable();
 
-        new SignerV4('rds-db', $region)->presign($request, $credentials, new RequestContext([
+        (new SignerV4('rds-db', $region))->presign($request, $credentials, new RequestContext([
             'currentDate' => $signedAt,
             'expirationDate' => $signedAt->modify(sprintf('+%d seconds', self::TOKEN_LIFETIME_SECONDS)),
         ]));

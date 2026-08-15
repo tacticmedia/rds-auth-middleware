@@ -1,6 +1,6 @@
-# RDS Auth middleware
+# Doctrine middleware for RDS authentication
 
-[![codecov](https://codecov.io/gh/tacticmedia/rds-auth-middleware/graph/badge.svg?token=XZINN5HXOB)](https://codecov.io/gh/tacticmedia/rds-auth-middleware)
+[![codecov](https://codecov.io/gh/tacticmedia/rds-auth-middleware/graph/badge.svg?token=XZINN5HXOB)](https://github.com/tacticmedia/rds-auth-middleware)
 
 **Important**: Symfony users should install [`tacticmedia/rds-auth-bundle`](https://github.com/tacticmedia/rds-auth-bundle) instead, which configures this package through bundle configuration.
 

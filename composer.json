@@ -3,7 +3,7 @@
     "description": "Doctrine DBAL driver middleware for Amazon RDS: IAM token authentication and master-password refresh from Secrets Manager.",
     "license": "MIT",
     "type": "library",
-    "version": "2.0.0",
+    "version": "1.0.0",
     "keywords": [
         "aws",
         "rds",
@@ -14,9 +14,9 @@
         "postgresql"
     ],
     "require": {
-        "php": ">=8.4",
-        "async-aws/core": "^1.29",
-        "async-aws/secrets-manager": "^2.10",
+        "php": ">=8.3",
+        "async-aws/core": "^1.28",
+        "async-aws/secrets-manager": "^2.0",
         "doctrine/dbal": "^4.0",
         "psr/cache": "^2.0 || ^3.0",
         "psr/clock": "^1.0"
@@ -27,11 +27,14 @@
         "phpstan/phpstan": "^2.1.0",
         "phpstan/phpstan-doctrine": "^2.0.27",
         "phpstan/phpstan-symfony": "^2.0.20",
-        "phpunit/phpunit": "^13.3",
+        "phpunit/phpunit": "^12.5 || ^13.3",
         "rector/rector": "^2.5.2",
         "roave/security-advisories": "dev-latest",
         "symfony/cache": "^7.4 || ^8.0",
         "symfony/http-client": "^7.4 || ^8.0"
+    },
+    "conflict": {
+        "symfony/polyfill-uuid": "<1.13.1"
     },
     "autoload": {
         "psr-4": {

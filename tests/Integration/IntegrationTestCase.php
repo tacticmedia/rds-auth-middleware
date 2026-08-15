@@ -94,9 +94,16 @@ abstract class IntegrationTestCase extends TestCase
      */
     protected static function mysqlDriverOptions(): array
     {
+        if (class_exists(\Pdo\Mysql::class)) {
+            return [
+                \Pdo\Mysql::ATTR_SSL_CA => self::mysqlCaFile(),
+                \Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT => false,
+            ];
+        }
+
         return [
-            \Pdo\Mysql::ATTR_SSL_CA => self::mysqlCaFile(),
-            \Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT => false,
+            \PDO::MYSQL_ATTR_SSL_CA => self::mysqlCaFile(),
+            \PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
         ];
     }
 

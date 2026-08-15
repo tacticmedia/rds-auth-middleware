@@ -50,7 +50,7 @@ final class RdsSecretPasswordProviderTest extends TestCase
         $this->responses[] = new MockResponse('{}');
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageIsOrContains('has no SecretString value');
+        $this->expectExceptionMessage('has no SecretString value');
         $this->provider->freshPassword(self::SECRET_ARN);
     }
 
@@ -60,7 +60,7 @@ final class RdsSecretPasswordProviderTest extends TestCase
         $this->responses[] = $this->secretValueResponse('not-json');
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageIsOrContains('is not valid JSON');
+        $this->expectExceptionMessage('is not valid JSON');
         $this->provider->freshPassword(self::SECRET_ARN);
     }
 
@@ -70,7 +70,7 @@ final class RdsSecretPasswordProviderTest extends TestCase
         $this->responses[] = $this->secretValueResponse('{"username":"postgres"}');
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageIsOrContains('has no string "password" key');
+        $this->expectExceptionMessage('has no string "password" key');
         $this->provider->freshPassword(self::SECRET_ARN);
     }
 
@@ -80,7 +80,7 @@ final class RdsSecretPasswordProviderTest extends TestCase
         $this->responses[] = new MockResponse('{"__type":"AccessDeniedException","message":"Access denied"}', ['http_code' => 400]);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageIsOrContains('Cannot read RDS master secret "'.self::SECRET_ARN.'"');
+        $this->expectExceptionMessage('Cannot read RDS master secret "'.self::SECRET_ARN.'"');
         $this->provider->freshPassword(self::SECRET_ARN);
     }
 

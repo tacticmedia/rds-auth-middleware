@@ -75,4 +75,4 @@ Reusable doubles live in `tests/Support`: `FakeDriver`, `FakeConnection`, `Froze
 
 ## CI
 
-`.github/workflows/ci.yml` runs the unit suite and PHPStan on a matrix of PHP 8.4 and 8.5 with highest and lowest dependency versions, so code must work against the lowest versions composer.json allows. A separate job runs the integration suite against the compose services.
+`.github/workflows/ci.yml` runs the unit suite and PHPStan on a matrix of PHP 8.3, 8.4, and 8.5 with highest and lowest dependency versions, so code must work against the lowest versions composer.json allows. A separate job runs the integration suite on PHP 8.3 against the compose services.

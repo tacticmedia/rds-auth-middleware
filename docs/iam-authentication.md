@@ -70,11 +70,13 @@ CREATE USER 'app_user'@'%' IDENTIFIED WITH AWSAuthenticationPlugin AS 'RDS';
 RDS refuses IAM logins without TLS.
 
 - PostgreSQL: the middleware sets `sslmode=require` unless the connection parameters choose another mode.
-- MySQL and MariaDB: PDO MySQL configures TLS through `driverOptions`, not a connection parameter, so the middleware adds nothing and a missing TLS configuration fails closed. Point `Pdo\Mysql::ATTR_SSL_CA` at the [RDS certificate bundle](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html):
+- MySQL and MariaDB: PDO MySQL configures TLS through `driverOptions`, not a connection parameter, so the middleware adds nothing and a missing TLS configuration fails closed. Point `PDO::MYSQL_ATTR_SSL_CA` at the [RDS certificate bundle](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html):
 
 ```php
-$params['driverOptions'] = [\Pdo\Mysql::ATTR_SSL_CA => '/path/to/global-bundle.pem'];
+$params['driverOptions'] = [\PDO::MYSQL_ATTR_SSL_CA => '/path/to/global-bundle.pem'];
 ```
+
+On PHP 8.4 or later, `\Pdo\Mysql::ATTR_SSL_CA` names the same option; the `PDO::MYSQL_ATTR_SSL_CA` name is deprecated since PHP 8.5.
 
 ## Limitations
 

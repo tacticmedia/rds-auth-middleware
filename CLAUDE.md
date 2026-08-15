@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-A Doctrine DBAL 4 driver middleware (PHP >= 8.4, namespace `TacticMedia\RdsAuth`) that supplies the database credential for an Amazon RDS instance at connection time: IAM token, managed password from Secrets Manager, or pass-through. Symfony users consume it through `tacticmedia/rds-auth-bundle`, a separate repository.
+A Doctrine DBAL 4 driver middleware (PHP >= 8.3, namespace `TacticMedia\RdsAuth`) that supplies the database credential for an Amazon RDS instance at connection time: IAM token, managed password from Secrets Manager, or pass-through. Symfony users consume it through `tacticmedia/rds-auth-bundle`, a separate repository.
 
 ## Commands
 

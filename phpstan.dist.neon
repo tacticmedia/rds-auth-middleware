@@ -3,3 +3,9 @@ parameters:
     paths:
         - src
         - tests
+    ignoreErrors:
+        # Guarded by class_exists(); PHPStan running on PHP 8.3 does not know Pdo\Mysql.
+        -
+            message: '#^Access to undefined constant Pdo\\Mysql::#'
+            path: tests/Integration/IntegrationTestCase.php
+            reportUnmatched: false

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\Renaming\Rector\MethodCall\RenameMethodRector;
 
 return RectorConfig::configure()
     ->withParallel()
@@ -12,6 +13,10 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__.'/src',
         __DIR__.'/tests',
+    ])
+    ->withSkip([
+        // PHPUnit >=13.2 method renames do not exist on the phpunit ^12.5 floor.
+        RenameMethodRector::class => [__DIR__.'/tests'],
     ])
     ->withPhpSets()
     ->withComposerBased(
