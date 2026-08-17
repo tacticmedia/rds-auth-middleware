@@ -9,5 +9,7 @@
         "Requires PHP 8.3 or later and doctrine/dbal 4",
         "Pass a shared PSR-6 cache pool in production; without one every connection signs a new IAM token",
         "MySQL IAM authentication requires PDO::MYSQL_ATTR_SSL_CA in driverOptions; RDS refuses IAM logins without TLS"
-    ]
+    ],
+    "url": "https://context7.com/tacticmedia/rds-auth-middleware",
+    "public_key": "pk_1umi9R6WdtlDFKUgifjxO"
 }
