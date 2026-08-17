@@ -9,6 +9,7 @@ use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Exception as DriverException;
 use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class RdsAuthDriver extends AbstractDriverMiddleware
 {
@@ -35,6 +36,8 @@ final class RdsAuthDriver extends AbstractDriverMiddleware
      * A cache is recommended. Without one, every request or CLI invocation signs a new
      * token, and during a rotation every connection makes one rejected attempt and one
      * Secrets Manager read.
+     *
+     * A null $eventDispatcher disables {@see ConfiguredPasswordOutdated} dispatch.
      */
     public function __construct(
         Driver $wrapped,
@@ -44,6 +47,7 @@ final class RdsAuthDriver extends AbstractDriverMiddleware
         private readonly ?string $secretArn,
         private readonly ?CacheItemPoolInterface $cache = null,
         private readonly DatabaseEngine $engine = DatabaseEngine::Postgres,
+        private readonly ?EventDispatcherInterface $eventDispatcher = null,
     ) {
         parent::__construct($wrapped);
     }
@@ -159,7 +163,38 @@ final class RdsAuthDriver extends AbstractDriverMiddleware
         // Cache the password only after the database accepts it.
         $this->remember($key, $fresh, self::PASSWORD_CACHE_TTL_SECONDS);
 
+        // The try block returns, so this point is reached only through the catch: a null
+        // $cached means the rejected password came from the connection parameters, which
+        // the deployment configuration supplied. A rejected cached password is a rotation
+        // inside the TTL and says nothing about that configuration.
+        if (null === $cached) {
+            $this->eventDispatcher?->dispatch($this->outdatedPasswordEvent($params, $secretArn, $driverException));
+        }
+
         return $connection;
+    }
+
+    /**
+     * Never reads $params['password']: the event travels to third-party listeners.
+     *
+     * @param array<string, mixed> $params
+     */
+    private function outdatedPasswordEvent(
+        #[\SensitiveParameter]
+        array $params,
+        string $secretArn,
+        DriverException $rejection,
+    ): ConfiguredPasswordOutdated {
+        $port = $params['port'] ?? null;
+
+        return new ConfiguredPasswordOutdated(
+            $secretArn,
+            is_string($params['host'] ?? null) ? $params['host'] : null,
+            is_int($port) || (is_string($port) && '' !== $port && ctype_digit($port)) ? (int) $port : null,
+            is_string($params['dbname'] ?? null) ? $params['dbname'] : null,
+            is_string($params['user'] ?? null) ? $params['user'] : null,
+            $rejection->getSQLState(),
+        );
     }
 
     /**

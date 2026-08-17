@@ -14,18 +14,21 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use TacticMedia\RdsAuth\ConfiguredPasswordOutdated;
 use TacticMedia\RdsAuth\DatabaseEngine;
 use TacticMedia\RdsAuth\RdsAuthDriver;
 use TacticMedia\RdsAuth\RdsIamTokenGenerator;
 use TacticMedia\RdsAuth\RdsIamTokenProvider;
 use TacticMedia\RdsAuth\RdsSecretPasswordProvider;
 use TacticMedia\RdsAuth\Tests\Support\FakeDriver;
+use TacticMedia\RdsAuth\Tests\Support\RecordingEventDispatcher;
 use TacticMedia\RdsAuth\Tests\Support\StubDriverException;
 
 /**
  * @internal
  */
 #[CoversClass(RdsAuthDriver::class)]
+#[CoversClass(ConfiguredPasswordOutdated::class)]
 final class RdsAuthDriverTest extends TestCase
 {
     private const string SECRET_ARN = 'arn:aws:secretsmanager:ap-southeast-2:123456789012:secret:rds!db-abc';
@@ -355,7 +358,106 @@ final class RdsAuthDriverTest extends TestCase
         self::assertSame([], $this->secretsManagerResponses);
     }
 
-    private function driver(FakeDriver $fake, ?string $iamUsername, ?string $secretArn, bool $cached = true, DatabaseEngine $engine = DatabaseEngine::Postgres): RdsAuthDriver
+    #[TestDox('A rejected injected password recovered through the secret dispatches ConfiguredPasswordOutdated')]
+    public function testOutdatedInjectedPasswordDispatchesEvent(): void
+    {
+        $this->secretsManagerResponses[] = $this->secretValueResponse('{"password":"rotated"}');
+        $fake = new FakeDriver(new StubDriverException('auth failed', '28P01'), null);
+        $dispatcher = new RecordingEventDispatcher();
+        $driver = $this->driver($fake, iamUsername: null, secretArn: self::SECRET_ARN, dispatcher: $dispatcher);
+
+        $driver->connect(self::PARAMS);
+
+        self::assertCount(1, $dispatcher->events);
+        self::assertInstanceOf(ConfiguredPasswordOutdated::class, $dispatcher->events[0]);
+        self::assertSame('rotated', $this->cache->getItem($this->passwordKey())->get());
+    }
+
+    #[TestDox('The dispatched event carries the secret ARN and connection facts but never a password')]
+    public function testEventCarriesConnectionFactsWithoutPassword(): void
+    {
+        $this->secretsManagerResponses[] = $this->secretValueResponse('{"password":"rotated"}');
+        $fake = new FakeDriver(new StubDriverException('auth failed', '28P01'), null);
+        $dispatcher = new RecordingEventDispatcher();
+        $driver = $this->driver($fake, iamUsername: null, secretArn: self::SECRET_ARN, dispatcher: $dispatcher);
+
+        $driver->connect(self::PARAMS);
+
+        $event = $dispatcher->events[0];
+        self::assertInstanceOf(ConfiguredPasswordOutdated::class, $event);
+        self::assertSame(self::SECRET_ARN, $event->secretArn);
+        self::assertSame('db.example.com', $event->host);
+        self::assertSame(5432, $event->port);
+        self::assertSame('app', $event->dbname);
+        self::assertSame('postgres', $event->user);
+        self::assertSame('28P01', $event->sqlState);
+
+        $exported = var_export($event, true);
+        self::assertStringNotContainsString('injected', $exported);
+        self::assertStringNotContainsString('rotated', $exported);
+    }
+
+    #[TestDox('A rejected cached password dispatches no event because the injected password was never tried')]
+    public function testRejectedCachedPasswordDispatchesNoEvent(): void
+    {
+        $this->seedCache($this->passwordKey(), 'stale-password');
+        $this->secretsManagerResponses[] = $this->secretValueResponse('{"password":"rotated"}');
+        $fake = new FakeDriver(new StubDriverException('auth failed', '28P01'), null);
+        $dispatcher = new RecordingEventDispatcher();
+        $driver = $this->driver($fake, iamUsername: null, secretArn: self::SECRET_ARN, dispatcher: $dispatcher);
+
+        $driver->connect(self::PARAMS);
+
+        self::assertSame('rotated', $fake->attempts[1]['password']);
+        self::assertSame([], $dispatcher->events);
+    }
+
+    #[TestDox('No event is dispatched when the secret password is also rejected')]
+    public function testFailedSecretRetryDispatchesNoEvent(): void
+    {
+        $this->secretsManagerResponses[] = $this->secretValueResponse('{"password":"rotated"}');
+        $second = new StubDriverException('auth failed again', '28P01');
+        $fake = new FakeDriver(new StubDriverException('auth failed', '28P01'), $second);
+        $dispatcher = new RecordingEventDispatcher();
+        $driver = $this->driver($fake, iamUsername: null, secretArn: self::SECRET_ARN, dispatcher: $dispatcher);
+
+        $driverException = null;
+        try {
+            $driver->connect(self::PARAMS);
+        } catch (DriverException $driverException) {
+        }
+
+        self::assertSame($second, $driverException);
+        self::assertSame([], $dispatcher->events);
+    }
+
+    #[TestDox('IAM token recovery dispatches no event')]
+    public function testIamModeDispatchesNoEvent(): void
+    {
+        $this->seedCache($this->tokenKey(), 'stale-token');
+        $fake = new FakeDriver(new StubDriverException('auth failed'), null);
+        $dispatcher = new RecordingEventDispatcher();
+        $driver = $this->driver($fake, iamUsername: 'app', secretArn: null, dispatcher: $dispatcher);
+
+        $driver->connect(self::PARAMS);
+
+        self::assertCount(2, $fake->attempts);
+        self::assertSame([], $dispatcher->events);
+    }
+
+    #[TestDox('Pass-through mode dispatches no event')]
+    public function testPassThroughDispatchesNoEvent(): void
+    {
+        $fake = new FakeDriver(null);
+        $dispatcher = new RecordingEventDispatcher();
+        $driver = $this->driver($fake, iamUsername: null, secretArn: null, dispatcher: $dispatcher);
+
+        $driver->connect(self::PARAMS);
+
+        self::assertSame([], $dispatcher->events);
+    }
+
+    private function driver(FakeDriver $fake, ?string $iamUsername, ?string $secretArn, bool $cached = true, DatabaseEngine $engine = DatabaseEngine::Postgres, ?RecordingEventDispatcher $dispatcher = null): RdsAuthDriver
     {
         $tokens = new RdsIamTokenProvider(
             'ap-southeast-2',
@@ -370,7 +472,7 @@ final class RdsAuthDriverTest extends TestCase
             ),
         );
 
-        return new RdsAuthDriver($fake, $tokens, $passwords, $iamUsername, $secretArn, $cached ? $this->cache : null, $engine);
+        return new RdsAuthDriver($fake, $tokens, $passwords, $iamUsername, $secretArn, $cached ? $this->cache : null, $engine, $dispatcher);
     }
 
     private function secretValueResponse(string $secretString): MockResponse

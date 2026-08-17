@@ -10,6 +10,7 @@ Namespace `TacticMedia\RdsAuth`, PHP >= 8.3, doctrine/dbal ^4.0.
 - `RdsIamTokenProvider` - holds the region, delegates to `RdsIamTokenGenerator`.
 - `RdsIamTokenGenerator` - SigV4 presigner for RDS IAM tokens.
 - `RdsSecretPasswordProvider` - reads the `password` key from the secret JSON through the AsyncAws `SecretsManagerClient`.
+- `ConfiguredPasswordOutdated` - PSR-14 event carrying the secret ARN and the connection facts, never a credential.
 
 ## Connection flow
 
@@ -22,7 +23,7 @@ Both credential paths share the same shape:
 3. Store the credential only after the database accepts it.
 4. Never retry a fresh credential; the second failure propagates.
 
-The IAM path additionally swaps `user`, applies the engine default port, and on PostgreSQL sets `sslmode=require` unless the parameters choose another mode. The managed-password path retries only when `isPasswordFailure()` matches; see [managed-password.md](managed-password.md) for the exact SQLSTATE and message rules.
+The IAM path additionally swaps `user`, applies the engine default port, and on PostgreSQL sets `sslmode=require` unless the parameters choose another mode. The managed-password path retries only when `isPasswordFailure()` matches; see [managed-password.md](managed-password.md) for the exact SQLSTATE and message rules. When that retry succeeds and the rejected password came from the connection parameters rather than the cache, the path dispatches `ConfiguredPasswordOutdated` on the optional PSR-14 dispatcher, after step 3 so a throwing listener cannot discard the accepted password.
 
 ## Why a hand-rolled token generator
 

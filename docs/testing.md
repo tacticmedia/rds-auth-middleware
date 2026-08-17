@@ -71,7 +71,7 @@ php tests/fixtures/generate-reference-tokens.php
 
 ## Test doubles
 
-Reusable doubles live in `tests/Support`: `FakeDriver`, `FakeConnection`, `FrozenClock`, `StubDriverException`. Prefer them over new mocks.
+Reusable doubles live in `tests/Support`: `FakeDriver`, `FakeConnection`, `FrozenClock`, `StubDriverException`, `RecordingEventDispatcher`. Prefer them over new mocks.
 
 ## CI
 

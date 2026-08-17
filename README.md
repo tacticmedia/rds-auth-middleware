@@ -6,13 +6,13 @@
 
 **Important**: Symfony users should install [`tacticmedia/rds-auth-bundle`](https://github.com/tacticmedia/rds-auth-bundle) instead, which configures this package through bundle configuration.
 
-A Doctrine DBAL driver middleware that supplies the database credential for an Amazon RDS instance. At connection time it selects one of three modes:
+A Doctrine DBAL driver middleware that supplies the database credentials for an Amazon RDS instance. At connection time, it selects one of three modes:
 
-- When **IAM username** is configured: replace the user and password with a short-lived [RDS IAM authentication token](docs/iam-authentication.md).
-- When the **Secret ARN** is configured: connect with the configured password; when the database rejects it, read the current password from [Secrets Manager](docs/managed-password.md) and retry once. This recovers from automated RDS `ManageMasterUserPassword` rotation without a deployment.
+- When an **IAM username** is configured: replace the user and password with a short-lived [RDS IAM authentication token](docs/iam-authentication.md).
+- When the **Secret ARN** is configured: connect with the configured password; when the database rejects it, read the current password from [Secrets Manager](docs/managed-password.md) and retry once. This recovers from automated RDS `ManageMasterUserPassword` rotation without a deployment, and an optional PSR-14 dispatcher receives a `ConfiguredPasswordOutdated` event so the application can alert or redeploy.
 - Neither configured: pass the connection parameters through unchanged.
 
-Before you choose IAM authentication, read its [limitations](docs/iam-authentication.md#limitations): AWS requires 300 to 1000 MiB extra database memory for it, which rules out small instances. The managed password mode exists for exactly those deployments.
+Before you choose IAM authentication, read its [limitations](docs/iam-authentication.md#limitations): AWS requires 300 to 1000 MiB extra database memory, which rules out small instances. The managed password mode exists for exactly those deployments: an automatically rotated password is still better than a fixed one.
 
 ## Installation
 
@@ -65,6 +65,18 @@ composer qa                 # rector, cs, stan, test in sequence
 
 See [docs/testing.md](docs/testing.md) for the Docker services, environment variables, and reference fixtures.
 
+## Contributions
+
+Non-LLM slop contributions and issues are most definitely welcome. 
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## One more thing
+
+This package is brought to you by [Tactic Media, a South Australian software development business](https://tacticmedia.com.au). 
+
+We love to help businesses become more efficient by automating tasks that shouldn't have been done by a human in the first place.
+
+Head over to our website to check out what we do, and if you think we can help you give your employees more time to spend on something more creative, [let's talk](https://tacticmedia.com.au/contact.html)
