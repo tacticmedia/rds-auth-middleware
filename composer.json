@@ -3,7 +3,6 @@
     "description": "Doctrine DBAL driver middleware for Amazon RDS: IAM token authentication and master-password refresh from Secrets Manager.",
     "license": "MIT",
     "type": "library",
-    "version": "1.0.0",
     "keywords": [
         "aws",
         "rds",

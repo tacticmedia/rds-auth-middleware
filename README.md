@@ -1,6 +1,9 @@
 # Doctrine middleware for RDS authentication
 
+[![Packagist](https://img.shields.io/packagist/v/tacticmedia/rds-auth-middleware)](https://packagist.org/packages/tacticmedia/rds-auth-middleware)
+[![PHP](https://img.shields.io/packagist/dependency-v/tacticmedia/rds-auth-middleware/php)](https://packagist.org/packages/tacticmedia/rds-auth-middleware)
 [![codecov](https://codecov.io/gh/tacticmedia/rds-auth-middleware/graph/badge.svg?token=XZINN5HXOB)](https://codecov.io/gh/tacticmedia/rds-auth-middleware)
+[![License](https://img.shields.io/packagist/l/tacticmedia/rds-auth-middleware)](LICENSE)
 
 **TL;DR**: Doctrine middleware that bridges the gap between Doctrine's convenience and AWS RDS's advanced security features: IAM authentication and automatic password rotation. Use this bridge to improve your baseline security posture with minimal effort.
 
@@ -54,6 +57,12 @@ $connection = DriverManager::getConnection($params, $configuration);
 - [Database engines](docs/database-engines.md) - engine detection, ports, TLS per engine
 - [Architecture](docs/architecture.md) - class map, connection flow, design decisions
 - [Testing](docs/testing.md) - suites, Docker services, environment variables, fixtures
+
+## Versioning
+
+This package follows [semantic versioning](https://semver.org/). The public API is `RdsAuthMiddleware`, `RdsIamTokenProvider`, `RdsSecretPasswordProvider`, `RdsIamTokenGenerator`, `DatabaseEngine`, and `ConfiguredPasswordOutdated`. `RdsAuthMiddleware::wrap()` builds `RdsAuthDriver`; construct it directly at your own risk, because its constructor can take new arguments in a minor release.
+
+Releases are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Development
 
