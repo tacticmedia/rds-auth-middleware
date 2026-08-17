@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace TacticMedia\RdsAuth\Tests\Support;
 
 use Doctrine\DBAL\Driver;
-use Doctrine\DBAL\Driver\API\ExceptionConverter;
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Exception as DriverException;
-use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\ServerVersionProvider;
 
 /**
  * Records every connect() attempt and applies one preset outcome per attempt: a
  * DriverException is thrown; null returns the shared FakeConnection.
+ *
+ * One signature set satisfies the Driver interface of DBAL 3 and DBAL 4:
+ * getSchemaManager() exists only in DBAL 3, $versionProvider only in DBAL 4.
  */
 final class FakeDriver implements Driver
 {
@@ -50,12 +50,17 @@ final class FakeDriver implements Driver
         return $this->connection;
     }
 
-    public function getDatabasePlatform(ServerVersionProvider $versionProvider): AbstractPlatform
+    public function getDatabasePlatform(mixed $versionProvider = null): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function getExceptionConverter(): ExceptionConverter
+    public function getSchemaManager(mixed $conn = null, mixed $platform = null): never
+    {
+        throw new \LogicException('Not used by these tests.');
+    }
+
+    public function getExceptionConverter(): never
     {
         throw new \LogicException('Not used by these tests.');
     }

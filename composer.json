@@ -16,7 +16,7 @@
         "php": ">=8.3",
         "async-aws/core": "^1.28",
         "async-aws/secrets-manager": "^2.0",
-        "doctrine/dbal": "^4.0",
+        "doctrine/dbal": "^3.10 || ^4.0",
         "psr/cache": "^2.0 || ^3.0",
         "psr/clock": "^1.0",
         "psr/event-dispatcher": "^1.0"

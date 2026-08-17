@@ -12,12 +12,14 @@ jobs:
             matrix:
                 php: ['8.3', '8.4', '8.5']
                 deps: [highest, lowest]
+                dbal: ['^3.10', '^4.0']
         steps:
             - uses: actions/checkout@v5
             - uses: shivammathur/setup-php@v2
               with:
                   php-version: ${{ matrix.php }}
                   coverage: pcov
+            - run: composer require --no-update --no-interaction "doctrine/dbal:${{ matrix.dbal }}"
             - uses: ramsey/composer-install@v3
               with:
                   dependency-versions: ${{ matrix.deps }}
@@ -36,6 +38,10 @@ jobs:
 
     integration:
         runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                dbal: ['^3.10', '^4.0']
         steps:
             - uses: actions/checkout@v5
             - uses: shivammathur/setup-php@v2
@@ -43,6 +49,7 @@ jobs:
                   php-version: '8.3'
                   extensions: pdo_pgsql, pdo_mysql
                   coverage: none
+            - run: composer require --no-update --no-interaction "doctrine/dbal:${{ matrix.dbal }}"
             - uses: ramsey/composer-install@v3
             - run: docker compose --profile integration up -d --wait postgres mysql moto
             - run: vendor/bin/phpunit --testsuite integration --log-junit coverage/junit.xml

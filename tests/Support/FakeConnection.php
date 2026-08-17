@@ -5,58 +5,60 @@ declare(strict_types=1);
 namespace TacticMedia\RdsAuth\Tests\Support;
 
 use Doctrine\DBAL\Driver\Connection;
-use Doctrine\DBAL\Driver\Result;
-use Doctrine\DBAL\Driver\Statement;
 
-/** Inert connection; the tests only compare instances. */
+/**
+ * Inert connection; the tests only compare instances. One signature set satisfies
+ * the Connection interface of DBAL 3 and DBAL 4: never narrows every return type,
+ * mixed widens every parameter, and the DBAL 3 extras ($type, $name) stay optional.
+ */
 final class FakeConnection implements Connection
 {
-    public function prepare(string $sql): Statement
+    public function prepare(string $sql): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function query(string $sql): Result
+    public function query(string $sql): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function quote(string $value): string
+    public function quote(mixed $value, mixed $type = null): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function exec(string $sql): int|string
+    public function exec(string $sql): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function lastInsertId(): int|string
+    public function lastInsertId(mixed $name = null): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function beginTransaction(): void
+    public function beginTransaction(): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function commit(): void
+    public function commit(): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function rollBack(): void
+    public function rollBack(): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function getNativeConnection(): mixed
+    public function getNativeConnection(): never
     {
         throw new \LogicException('Not used by these tests.');
     }
 
-    public function getServerVersion(): string
+    public function getServerVersion(): never
     {
         throw new \LogicException('Not used by these tests.');
     }

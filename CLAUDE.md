@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-A Doctrine DBAL 4 driver middleware (PHP >= 8.3, namespace `TacticMedia\RdsAuth`) that supplies the database credential for an Amazon RDS instance at connection time: IAM token, managed password from Secrets Manager, or pass-through. Symfony users consume it through `tacticmedia/rds-auth-bundle`, a separate repository.
+A Doctrine DBAL driver middleware (DBAL ^3.10 or ^4.0, PHP >= 8.3, namespace `TacticMedia\RdsAuth`) that supplies the database credential for an Amazon RDS instance at connection time: IAM token, managed password from Secrets Manager, or pass-through. Symfony users consume it through `tacticmedia/rds-auth-bundle`, a separate repository.
 
 ## Commands
 
@@ -34,7 +34,8 @@ Read the relevant file in `docs/` before working in its area; do not load all of
 
 - `#[\SensitiveParameter]` is not inherited: repeat it on every method that receives `$params`.
 - No test requires AWS access; keep it that way.
-- CI tests lowest dependency versions, so code must work against the lowest versions composer.json allows.
+- CI tests lowest dependency versions and both DBAL majors, so code must work against the lowest versions composer.json allows with DBAL ^3.10 and ^4.0. Use only the API surface the two majors share.
+- `FakeDriver` and `FakeConnection` keep one signature set valid against the driver interfaces of both DBAL majors; see docs/testing.md before changing them.
 - Change `RdsIamTokenGenerator` only with `RdsIamTokenGeneratorReferenceTest` passing; it guards against drift from the official AWS signer.
 - Prefer the doubles in `tests/Support` over new mocks.
 - `docs/` is indexed by Context7 (see `context7.json`): keep every code block preceded by prose that describes it, and keep examples runnable.

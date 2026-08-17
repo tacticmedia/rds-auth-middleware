@@ -1,6 +1,6 @@
 # Architecture
 
-Namespace `TacticMedia\RdsAuth`, PHP >= 8.3, doctrine/dbal ^4.0.
+Namespace `TacticMedia\RdsAuth`, PHP >= 8.3, doctrine/dbal ^3.10 or ^4.0.
 
 ## Class map
 

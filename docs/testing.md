@@ -73,6 +73,8 @@ php tests/fixtures/generate-reference-tokens.php
 
 Reusable doubles live in `tests/Support`: `FakeDriver`, `FakeConnection`, `FrozenClock`, `StubDriverException`, `RecordingEventDispatcher`. Prefer them over new mocks.
 
+`FakeDriver` and `FakeConnection` carry one signature set that satisfies the driver interfaces of DBAL 3 and DBAL 4 at once: `never` return types on the throwing stubs, `mixed` parameters, and the parameters one major does not know stay optional. A signature change must remain valid against both majors.
+
 ## CI
 
-`.github/workflows/ci.yml` runs the unit suite and PHPStan on a matrix of PHP 8.3, 8.4, and 8.5 with highest and lowest dependency versions, so code must work against the lowest versions composer.json allows. A separate job runs the integration suite on PHP 8.3 against the compose services.
+`.github/workflows/ci.yml` runs the unit suite and PHPStan on a matrix of PHP 8.3, 8.4, and 8.5, highest and lowest dependency versions, and doctrine/dbal `^3.10` and `^4.0`, so code must work against the lowest versions composer.json allows on both DBAL majors. A separate job runs the integration suite on PHP 8.3 against the compose services, once per DBAL major.
