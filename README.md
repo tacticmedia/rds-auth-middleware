@@ -76,7 +76,7 @@ See [docs/testing.md](docs/testing.md) for the Docker services, environment vari
 
 ## Contributions
 
-Non-LLM slop contributions and issues are most definitely welcome. 
+Non-LLM-slop contributions and issues are most definitely welcome. 
 
 ## License
 
