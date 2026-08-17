@@ -11,6 +11,11 @@ use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * Use RdsAuthMiddleware to construct the driver.
+ *
+ * @internal
+ */
 final class RdsAuthDriver extends AbstractDriverMiddleware
 {
     /**

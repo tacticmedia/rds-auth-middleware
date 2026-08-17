@@ -1,0 +1,14 @@
+# docs/ stays in the archive: the README links to it.
+/.devcontainer          export-ignore
+/.github                export-ignore
+/.idea                  export-ignore
+/tests                  export-ignore
+/.gitattributes         export-ignore
+/.gitignore             export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/CLAUDE.md              export-ignore
+/compose.yaml           export-ignore
+/context7.json          export-ignore
+/phpstan.dist.neon      export-ignore
+/phpunit.xml.dist       export-ignore
+/rector.php             export-ignore
