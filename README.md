@@ -9,6 +9,8 @@
 
 **Important**: Symfony users should install [`tacticmedia/rds-auth-bundle`](https://github.com/tacticmedia/rds-auth-bundle) instead, which configures this package through bundle configuration.
 
+---
+
 A Doctrine DBAL driver middleware that supplies the database credentials for an Amazon RDS instance. At connection time, it selects one of three modes:
 
 - When an **IAM username** is configured: replace the user and password with a short-lived [RDS IAM authentication token](docs/iam-authentication.md).

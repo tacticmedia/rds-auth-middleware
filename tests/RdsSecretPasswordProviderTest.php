@@ -84,6 +84,16 @@ final class RdsSecretPasswordProviderTest extends TestCase
         $this->provider->freshPassword(self::SECRET_ARN);
     }
 
+    #[TestDox('Wraps a network failure with the secret ARN')]
+    public function testWrapsNetworkFailure(): void
+    {
+        $this->responses[] = new MockResponse('', ['error' => 'Connection refused']);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Cannot read RDS master secret "'.self::SECRET_ARN.'": Could not contact remote server.');
+        $this->provider->freshPassword(self::SECRET_ARN);
+    }
+
     private function secretValueResponse(string $secretString): MockResponse
     {
         return new MockResponse(json_encode(['SecretString' => $secretString], JSON_THROW_ON_ERROR));
