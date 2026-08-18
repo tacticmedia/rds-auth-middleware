@@ -1,8 +1,33 @@
 # Changelog
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Fixed
+
+- The `symfony/polyfill-uuid` conflict blocked installation in projects that replace the polyfill, because a `replace` at `*` matches every conflict constraint. The version floor moved to `require-dev`, which guards the lowest-versions CI job and is invisible to consumers.
+
+## [1.1.1] - 2026-08-17
+
+### Added
+
+- `SECURITY.md`, which tells how to report a vulnerability.
+- Tests for the two remaining error branches: unresolvable AWS credentials and a network failure during a secret read. Statement coverage is 100%.
+
+## [1.1.0] - 2026-08-17
+
+### Added
+
+- Support for Doctrine DBAL ^3.10 in addition to ^4.0. CI tests both majors at their lowest and latest versions.
+
+## [1.0.1] - 2026-08-17
+
+### Fixed
+
+- A hyphenation error in the README that inverted the contributions policy.
 
 ## [1.0.0] - 2026-08-17
 
@@ -17,5 +42,8 @@ Initial release.
 - An optional PSR-14 `ConfiguredPasswordOutdated` event that reports a stale deployed password. It carries the secret ARN and the connection facts, never a credential.
 - `DatabaseEngine`, which detects PostgreSQL and MySQL or MariaDB from the wrapped driver to select the default port, the TLS handling, and the [password-rejection rules](docs/database-engines.md).
 
-[Unreleased]: https://github.com/tacticmedia/rds-auth-middleware/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/tacticmedia/rds-auth-middleware/releases/tag/v1.0.0
+[Unreleased]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.1.1...HEAD
+[1.1.1]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.0.1...1.1.0
+[1.0.1]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.0.0...1.0.1
+[1.0.0]: https://github.com/tacticmedia/rds-auth-middleware/releases/tag/1.0.0
