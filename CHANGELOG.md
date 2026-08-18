@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Fixed
+## [1.1.2] - 2026-08-18
+
+### Changed
 
 - The `symfony/polyfill-uuid` conflict blocked installation in projects that replace the polyfill, because a `replace` at `*` matches every conflict constraint. The version floor moved to `require-dev`, which guards the lowest-versions CI job and is invisible to consumers.
 

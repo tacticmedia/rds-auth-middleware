@@ -31,10 +31,8 @@
         "rector/rector": "^2.5.2",
         "roave/security-advisories": "dev-latest",
         "symfony/cache": "^7.4 || ^8.0",
-        "symfony/http-client": "^7.4 || ^8.0"
-    },
-    "conflict": {
-        "symfony/polyfill-uuid": "<1.13.1"
+        "symfony/http-client": "^7.4 || ^8.0",
+        "symfony/polyfill-uuid": "^1.13.1"
     },
     "autoload": {
         "psr-4": {
