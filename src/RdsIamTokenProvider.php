@@ -9,9 +9,14 @@ namespace TacticMedia\RdsAuth;
  * (environment, web identity, ini files, ECS, IMDS) resolves the instance or task
  * role; that role requires the rds-db:connect permission.
  *
+ * Not final: a lazy-service proxy must subclass on PHP 8.3, which has no native
+ * lazy objects. TODO: make the class final when PHP 8.3 support is dropped.
+ *
+ * @final
+ *
  * @see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.IAMPolicy.html
  */
-final readonly class RdsIamTokenProvider
+readonly class RdsIamTokenProvider
 {
     private RdsIamTokenGenerator $generator;
 

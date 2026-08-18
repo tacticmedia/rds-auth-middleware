@@ -53,6 +53,8 @@ The middleware selects one of three modes at connection time:
 
 The IAM username takes precedence when both are set. `null` and the empty string both disable a mode, so unset environment variables select pass-through and one build runs in every environment.
 
+Both providers require the region at construction. A wiring that builds them eagerly needs the region in every environment; a dependency injection container can register them as lazy services so a pass-through application never constructs them.
+
 ## AWS credentials
 
 Both providers use the [AsyncAws default credential chain](https://async-aws.com/authentication/): environment, web identity, ini files, ECS container, EC2 instance metadata. On AWS compute this resolves the instance or task role without configuration.

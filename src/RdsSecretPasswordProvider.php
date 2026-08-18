@@ -12,9 +12,14 @@ use AsyncAws\SecretsManager\SecretsManagerClient;
  * Reads the master password from the RDS-managed secret JSON. Every read is a network
  * request, so the driver calls this only after a rejection.
  *
+ * Not final: a lazy-service proxy must subclass on PHP 8.3, which has no native
+ * lazy objects. TODO: make the class final when PHP 8.3 support is dropped.
+ *
+ * @final
+ *
  * @see https://docs.aws.amazon.com/secretsmanager/latest/userguide/reference_secret_json_structure.html
  */
-final readonly class RdsSecretPasswordProvider
+readonly class RdsSecretPasswordProvider
 {
     private SecretsManagerClient $secrets;
 
