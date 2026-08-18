@@ -27,14 +27,18 @@ jobs:
             - run: vendor/bin/phpstan analyse --no-progress
             - uses: codecov/codecov-action@v7
               with:
-                  files: coverage/clover.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
+                  files: coverage/clover.xml
+                  disable_search: true
+                  fail_ci_if_error: true
             - uses: codecov/codecov-action@v7
               if: ${{ !cancelled() }}
               with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
                   report_type: test_results
                   files: coverage/junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
+                  disable_search: true
+                  fail_ci_if_error: true
 
     integration:
         runs-on: ubuntu-latest
@@ -58,8 +62,10 @@ jobs:
             - uses: codecov/codecov-action@v7
               if: ${{ !cancelled() }}
               with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
                   report_type: test_results
                   files: coverage/junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
+                  disable_search: true
+                  fail_ci_if_error: true
             - run: docker compose --profile integration logs
               if: failure()
