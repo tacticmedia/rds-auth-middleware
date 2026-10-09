@@ -174,15 +174,27 @@ final class RdsAuthDriver extends AbstractDriverMiddleware
         // Cache the password only after the database accepts it.
         $this->remember($key, $fresh, self::PASSWORD_CACHE_TTL_SECONDS);
 
-        // The try block returns, so this point is reached only through the catch: a null
-        // $cached means the rejected password came from the connection parameters, which
-        // the deployment configuration supplied. A rejected cached password is a rotation
-        // inside the TTL and says nothing about that configuration.
-        if (null === $cached) {
+        // Dispatch also after a rejected cached password: a warm cache never tries the
+        // configured password, which can still be outdated.
+        if (!$this->isConfiguredPassword($params, $fresh)) {
             $this->eventDispatcher?->dispatch($this->outdatedPasswordEvent($params, $secretArn, $driverException));
         }
 
         return $connection;
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     */
+    private function isConfiguredPassword(
+        #[\SensitiveParameter]
+        array $params,
+        #[\SensitiveParameter]
+        string $password,
+    ): bool {
+        $configured = $params['password'] ?? null;
+
+        return is_string($configured) && hash_equals($configured, $password);
     }
 
     /**

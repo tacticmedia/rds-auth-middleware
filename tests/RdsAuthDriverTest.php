@@ -430,8 +430,8 @@ final class RdsAuthDriverTest extends TestCase
         self::assertStringNotContainsString('rotated', $exported);
     }
 
-    #[TestDox('A rejected cached password dispatches no event because the injected password was never tried')]
-    public function testRejectedCachedPasswordDispatchesNoEvent(): void
+    #[TestDox('A rejected cached password dispatches the event when the secret password differs from the injected one')]
+    public function testRejectedCachedPasswordDispatchesEventForOutdatedInjectedPassword(): void
     {
         $this->seedCache($this->passwordKey(), 'stale-password');
         $this->secretsManagerResponses[] = $this->secretValueResponse('{"password":"rotated"}');
@@ -441,8 +441,55 @@ final class RdsAuthDriverTest extends TestCase
 
         $driver->connect(self::PARAMS);
 
+        self::assertSame('stale-password', $fake->attempts[0]['password']);
+        self::assertSame('rotated', $fake->attempts[1]['password']);
+        self::assertCount(1, $dispatcher->events);
+        self::assertInstanceOf(ConfiguredPasswordOutdated::class, $dispatcher->events[0]);
+    }
+
+    #[TestDox('A rejected cached password dispatches no event when the injected password already matches the secret')]
+    public function testRejectedCachedPasswordWithCurrentInjectedPasswordDispatchesNoEvent(): void
+    {
+        $this->seedCache($this->passwordKey(), 'stale-password');
+        $this->secretsManagerResponses[] = $this->secretValueResponse('{"password":"rotated"}');
+        $fake = new FakeDriver(new StubDriverException('auth failed', '28P01'), null);
+        $dispatcher = new RecordingEventDispatcher();
+        $driver = $this->driver($fake, iamUsername: null, secretArn: self::SECRET_ARN, dispatcher: $dispatcher);
+
+        $driver->connect([...self::PARAMS, 'password' => 'rotated']);
+
         self::assertSame('rotated', $fake->attempts[1]['password']);
         self::assertSame([], $dispatcher->events);
+    }
+
+    #[TestDox('A rejected injected password that equals the secret password dispatches no event')]
+    public function testRejectedInjectedPasswordEqualToSecretDispatchesNoEvent(): void
+    {
+        $this->secretsManagerResponses[] = $this->secretValueResponse('{"password":"injected"}');
+        $fake = new FakeDriver(new StubDriverException('auth failed', '28P01'), null);
+        $dispatcher = new RecordingEventDispatcher();
+        $driver = $this->driver($fake, iamUsername: null, secretArn: self::SECRET_ARN, dispatcher: $dispatcher);
+
+        $driver->connect(self::PARAMS);
+
+        self::assertCount(2, $fake->attempts);
+        self::assertSame([], $dispatcher->events);
+    }
+
+    #[TestDox('Connection parameters without a password count as an outdated injected password')]
+    public function testMissingInjectedPasswordDispatchesEvent(): void
+    {
+        $this->secretsManagerResponses[] = $this->secretValueResponse('{"password":"rotated"}');
+        $fake = new FakeDriver(new StubDriverException('auth failed', '28P01'), null);
+        $dispatcher = new RecordingEventDispatcher();
+        $driver = $this->driver($fake, iamUsername: null, secretArn: self::SECRET_ARN, dispatcher: $dispatcher);
+        $params = self::PARAMS;
+        unset($params['password']);
+
+        $driver->connect($params);
+
+        self::assertSame('', $fake->attempts[0]['password']);
+        self::assertCount(1, $dispatcher->events);
     }
 
     #[TestDox('No event is dispatched when the secret password is also rejected')]

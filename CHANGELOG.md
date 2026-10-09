@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- `ConfiguredPasswordOutdated` fires when the database rejects a password, accepts the secret password, and that password differs from the password in the connection parameters. It also fires after a rejected cached password while the configured password is outdated, and it does not fire when the configured password already equals the secret password.
+
 ### Fixed
 
 - IAM mode on PostgreSQL treats an empty `sslmode` as unset and sets `require`. pdo_pgsql rejected `sslmode=` with "invalid sslmode value".

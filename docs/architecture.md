@@ -23,7 +23,7 @@ Both credential paths share the same shape:
 3. Store the credential only after the database accepts it.
 4. Never retry a fresh credential; the second failure propagates.
 
-The IAM path additionally swaps `user`, applies the engine default port, and on PostgreSQL sets `sslmode=require` unless the parameters choose another mode. An empty port or sslmode counts as unset. The managed-password path retries only when `isPasswordFailure()` matches; see [managed-password.md](managed-password.md) for the exact SQLSTATE and message rules. When that retry succeeds and the rejected password came from the connection parameters rather than the cache, the path dispatches `ConfiguredPasswordOutdated` on the optional PSR-14 dispatcher, after step 3 so a throwing listener cannot discard the accepted password.
+The IAM path additionally swaps `user`, applies the engine default port, and on PostgreSQL sets `sslmode=require` unless the parameters choose another mode. An empty port or sslmode counts as unset. The managed-password path retries only when `isPasswordFailure()` matches; see [managed-password.md](managed-password.md) for the exact SQLSTATE and message rules. When the retry succeeds and the secret password differs from the password in the connection parameters, the path dispatches `ConfiguredPasswordOutdated` on the optional PSR-14 dispatcher, after step 3 so a throwing listener cannot discard the accepted password.
 
 ## Why a hand-rolled token generator
 

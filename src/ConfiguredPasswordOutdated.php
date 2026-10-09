@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace TacticMedia\RdsAuth;
 
 /**
- * Dispatched from managed-password mode when the database rejects the configured
- * password and accepts the current Secrets Manager password. The deployed
- * configuration is outdated at that point; a redeployment reloads it.
+ * Dispatched from managed-password mode when the database rejects a password, accepts
+ * the current Secrets Manager password, and that password differs from the configured
+ * one. The deployed configuration is outdated at that point; a redeployment reloads it.
  *
- * Carries no credential. A null property means the connection parameters did not
- * supply the value; no engine default is substituted.
+ * Carries no credential. $sqlState belongs to the rejected password, cached or
+ * configured. A null property means the connection parameters did not supply the
+ * value; no engine default is substituted.
  *
  * {@see RdsAuthDriver::__construct()} for the dispatcher seam.
  */

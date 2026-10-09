@@ -73,11 +73,11 @@ The retry runs only after an authentication failure; any other failure does not 
 
 The recovery is silent: the connection succeeds and the application never learns that its deployed password is invalid. Pass a [PSR-14](https://www.php-fig.org/psr/psr-14/) dispatcher as the last `RdsAuthMiddleware` argument to receive a `TacticMedia\RdsAuth\ConfiguredPasswordOutdated` event at that moment, and act on it: alert operations, or trigger the redeployment that reloads the password.
 
-The event fires when the database rejects the password from the connection parameters and then accepts the current secret password. It carries the secret ARN, `host`, `port`, `dbname`, `user`, and the SQLSTATE of the rejection; a property is null when the connection parameters did not supply the value. It never carries a password or the rejection exception, whose trace frames can hold unredacted parameters.
+The event fires when the database rejects a password, accepts the current secret password, and that password differs from the password in the connection parameters. The rejected password can be the configured one or a [cached](caching.md) one: a warm cache never tries the configured password, so the comparison detects an outdated configuration after every rotation. It carries the secret ARN, `host`, `port`, `dbname`, `user`, and the SQLSTATE of the rejection; a property is null when the connection parameters did not supply the value. It never carries a password or the rejection exception, whose trace frames can hold unredacted parameters.
 
 It does not fire when:
 
-- A [cached](caching.md) password is rejected. That is a rotation inside the cache TTL and says nothing about the deployed configuration.
+- The secret password equals the configured password. The deployed configuration is current.
 - The secret password is rejected too. The exception propagates instead.
 - IAM mode or pass-through mode is active. Neither reads a configured password.
 
