@@ -2,7 +2,7 @@
 
 ## How it works
 
-When the IAM username is configured, the driver replaces `user` and `password` in the connection parameters with a short-lived [RDS IAM authentication token](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html). The token is a SigV4-presigned URL with a 15-minute lifetime. Signing happens locally and sends nothing to RDS; credential resolution can add one IMDS round trip when the in-memory credential cache is empty.
+When the IAM username is configured, the driver replaces `user` and `password` in the connection parameters with a short-lived [RDS IAM authentication token](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html). The token is a SigV4-presigned URL with a 15-minute lifetime. Signing happens locally and sends nothing to RDS. The resolved AWS credentials live only in the memory of the current PHP request or process, so the first token in each one resolves the role first: three IMDS requests on EC2 with IMDSv2. See [caching](caching.md#choosing-a-pool).
 
 With a [cache pool](caching.md) configured, an accepted token is reused for 10 minutes. A token the database rejects, for example after the signing credentials rotate, is deleted; the driver signs a new one and retries once.
 
@@ -80,9 +80,11 @@ On PHP 8.4 or later, `\Pdo\Mysql::ATTR_SSL_CA` names the same option; the `PDO::
 
 ## Limitations
 
-AWS documents that IAM database authentication needs 300 to 1000 MiB extra memory on the database instance for reliable connectivity. Small instances and free-tier environments often cannot afford this; use the [managed password mode](managed-password.md) there instead.
+[AWS documents](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html#UsingWithRDS.IAMDBAuth.Limitations) that IAM database authentication requires compute resources on the database instance, and 300 to 1000 MiB extra memory for reliable connectivity. Small instances and free-tier environments often cannot afford this; use the [managed password mode](managed-password.md) there instead.
 
-The token cache does not reduce the cost of the connections themselves: the database verifies every new IAM-authenticated connection. At high connection rates, reuse connections with a persistent-worker runtime or [RDS Proxy](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html).
+The token cache does not reduce the cost of the connections themselves: the database verifies every new IAM-authenticated connection. PHP-FPM opens a new connection for each request, so each request costs one IAM authentication on the database. At high request rates, reuse connections with a persistent-worker runtime such as FrankenPHP worker mode, or with [RDS Proxy](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html).
+
+Do not combine IAM tokens with PDO persistent connections. PDO keys a persistent connection by DSN, user, and password, so each new token opens a new persistent connection, and the previous one stays open until the worker process exits.
 
 ## Generating a token without the middleware
 

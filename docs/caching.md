@@ -17,7 +17,12 @@ The driver follows three invariants:
 
 ## Choosing a pool
 
-Use a pool that the workers on a host share, for example one backed by APCu. A per-process pool works but reads the credential sources more often.
+Use a pool that every process that connects shares. Each cache miss reads a credential source:
+
+- A token miss signs a new token. The resolved AWS credentials live only in the memory of the current PHP request or process, so the first miss in each one resolves the instance role through IMDS: three requests with IMDSv2. Under PHP-FPM the token cache therefore also limits IMDS traffic.
+- A password miss after a rotation costs one rejected attempt and one Secrets Manager read, and that read resolves AWS credentials the same way.
+
+APCu shares its memory only between processes forked from one parent, such as the PHP-FPM workers of one master. Each CLI process gets a private segment that ends with the process. Without [`apc.enable_cli=1`](https://www.php.net/manual/en/apcu.configuration.php), APCu stores nothing in CLI. An APCu pool therefore suits PHP-FPM and long-running workers:
 
 ```php
 use Symfony\Component\Cache\Adapter\ApcuAdapter;
