@@ -95,13 +95,19 @@ final class RdsAuthDriver extends AbstractDriverMiddleware
         string $iamUser,
     ): Connection {
         $host = (string) ($params['host'] ?? '');
-        $port = (int) ($params['port'] ?? $this->engine->defaultPort());
+
+        // DBAL drivers skip an empty port, so the token must use the default port too.
+        $port = $params['port'] ?? null;
+        $port = null === $port || '' === $port ? $this->engine->defaultPort() : (int) $port;
+
         $base = [...$params, 'user' => $iamUser];
 
         // MySQL has no sslmode parameter; its TLS comes from driverOptions, and RDS
         // refuses IAM logins without TLS, so a missing configuration fails closed.
+        // pdo_pgsql rejects an empty sslmode, so an empty string counts as unset.
         if (DatabaseEngine::Postgres === $this->engine) {
-            $base['sslmode'] = $params['sslmode'] ?? 'require';
+            $sslmode = $params['sslmode'] ?? null;
+            $base['sslmode'] = null === $sslmode || '' === $sslmode ? 'require' : $sslmode;
         }
 
         $key = $this->tokenKey($host, $port, $iamUser);

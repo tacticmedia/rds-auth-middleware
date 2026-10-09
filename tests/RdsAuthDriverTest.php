@@ -125,6 +125,39 @@ final class RdsAuthDriverTest extends TestCase
         self::assertStringStartsWith('db.example.com:5432/', $attempt['password']);
     }
 
+    #[DataProvider('iamSslModes')]
+    #[TestDox('IAM mode on PostgreSQL requires TLS unless the parameters choose a mode')]
+    public function testIamModeSslMode(?string $configured, string $expected): void
+    {
+        $fake = new FakeDriver(null);
+        $driver = $this->driver($fake, iamUsername: 'app', secretArn: null);
+
+        $driver->connect([...self::PARAMS, 'sslmode' => $configured]);
+
+        self::assertSame($expected, $fake->attempts[0]['sslmode']);
+    }
+
+    /** @return iterable<string, array{?string, string}> */
+    public static function iamSslModes(): iterable
+    {
+        yield 'null' => [null, 'require'];
+        yield 'empty string' => ['', 'require'];
+        yield 'explicit mode' => ['verify-full', 'verify-full'];
+    }
+
+    #[TestDox('IAM mode treats an empty port as unset and signs the token for the default port')]
+    public function testIamModeTreatsEmptyPortAsUnset(): void
+    {
+        $fake = new FakeDriver(null);
+        $driver = $this->driver($fake, iamUsername: 'app', secretArn: null);
+
+        $driver->connect([...self::PARAMS, 'port' => '']);
+
+        $password = $fake->attempts[0]['password'];
+        self::assertIsString($password);
+        self::assertStringStartsWith('db.example.com:5432/', $password);
+    }
+
     #[TestDox('An accepted token is cached and the next connect reuses the cache')]
     public function testAcceptedTokenIsCached(): void
     {

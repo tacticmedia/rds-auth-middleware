@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- IAM mode on PostgreSQL treats an empty `sslmode` as unset and sets `require`. pdo_pgsql rejected `sslmode=` with "invalid sslmode value".
+- IAM mode treats an empty `port` as unset. The token was signed for port 0 while DBAL connected to the default port.
+
 ## [1.1.3] - 2026-08-18
 
 ### Changed
