@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-09
+
 ### Changed
 
 - Managed-password mode caches the accepted Secrets Manager password without a TTL instead of for 600 seconds; the pool's default lifetime applies. A rejection replaces the entry, so a rotation costs one rejected attempt, one Secrets Manager read, and one event per cache instead of one cycle every 10 minutes.
