@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Managed-password mode caches the accepted Secrets Manager password without a TTL instead of for 600 seconds; the pool's default lifetime applies. A rejection replaces the entry, so a rotation costs one rejected attempt, one Secrets Manager read, and one event per cache instead of one cycle every 10 minutes.
 - `ConfiguredPasswordOutdated` fires when the database rejects a password, accepts the secret password, and that password differs from the password in the connection parameters. It also fires after a rejected cached password while the configured password is outdated, and it does not fire when the configured password already equals the secret password.
 
 ### Fixed

@@ -13,7 +13,7 @@ The driver follows three invariants:
 ## TTLs
 
 - IAM tokens: cached 600 seconds of their 900-second lifetime. The margin covers clock skew and the connection that uses the token.
-- Passwords: cached 600 seconds to limit Secrets Manager reads during a rotation window.
+- Passwords: cached without a TTL, so the pool's default lifetime applies. A Secrets Manager password stays valid until the next rotation, and invariant 2 replaces it after the database rejects it. With a pool that every process shares, a rotation costs one rejected attempt and one Secrets Manager read in total.
 
 ## Choosing a pool
 

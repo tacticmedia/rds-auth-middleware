@@ -71,7 +71,7 @@ php tests/fixtures/generate-reference-tokens.php
 
 ## Test doubles
 
-Reusable doubles live in `tests/Support`: `FakeDriver`, `FakeConnection`, `FrozenClock`, `StubDriverException`, `RecordingEventDispatcher`. Prefer them over new mocks.
+Reusable doubles live in `tests/Support`: `FakeDriver`, `FakeConnection`, `FrozenClock`, `StubDriverException`, `RecordingEventDispatcher`, `RecordingCachePool` with `RecordingCacheItem`. Prefer them over new mocks. `RecordingCachePool` exposes the `expiresAfter()` argument of each saved item, which `ArrayAdapter` hides in the lowest symfony/cache version CI tests.
 
 `FakeDriver` and `FakeConnection` carry one signature set that satisfies the driver interfaces of DBAL 3 and DBAL 4 at once: `never` return types on the throwing stubs, `mixed` parameters, and the parameters one major does not know stay optional. A signature change must remain valid against both majors.
 

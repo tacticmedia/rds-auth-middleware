@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -21,6 +22,7 @@ use TacticMedia\RdsAuth\RdsIamTokenGenerator;
 use TacticMedia\RdsAuth\RdsIamTokenProvider;
 use TacticMedia\RdsAuth\RdsSecretPasswordProvider;
 use TacticMedia\RdsAuth\Tests\Support\FakeDriver;
+use TacticMedia\RdsAuth\Tests\Support\RecordingCachePool;
 use TacticMedia\RdsAuth\Tests\Support\RecordingEventDispatcher;
 use TacticMedia\RdsAuth\Tests\Support\StubDriverException;
 
@@ -492,6 +494,33 @@ final class RdsAuthDriverTest extends TestCase
         self::assertCount(1, $dispatcher->events);
     }
 
+    #[TestDox('An accepted secret password is cached without a TTL')]
+    public function testAcceptedPasswordIsCachedWithoutTtl(): void
+    {
+        $pool = new RecordingCachePool();
+        $this->secretsManagerResponses[] = $this->secretValueResponse('{"password":"rotated"}');
+        $fake = new FakeDriver(new StubDriverException('auth failed', '28P01'), null);
+        $driver = $this->driver($fake, iamUsername: null, secretArn: self::SECRET_ARN, pool: $pool);
+
+        $driver->connect(self::PARAMS);
+
+        $saved = $pool->saved[$this->passwordKey()];
+        self::assertSame('rotated', $saved->get());
+        self::assertNull($saved->expiresAfter);
+    }
+
+    #[TestDox('An accepted token is cached for 600 seconds of its 900-second lifetime')]
+    public function testAcceptedTokenIsCachedFor600Seconds(): void
+    {
+        $pool = new RecordingCachePool();
+        $fake = new FakeDriver(null);
+        $driver = $this->driver($fake, iamUsername: 'app', secretArn: null, pool: $pool);
+
+        $driver->connect(self::PARAMS);
+
+        self::assertSame(600, $pool->saved[$this->tokenKey()]->expiresAfter);
+    }
+
     #[TestDox('No event is dispatched when the secret password is also rejected')]
     public function testFailedSecretRetryDispatchesNoEvent(): void
     {
@@ -537,7 +566,7 @@ final class RdsAuthDriverTest extends TestCase
         self::assertSame([], $dispatcher->events);
     }
 
-    private function driver(FakeDriver $fake, ?string $iamUsername, ?string $secretArn, bool $cached = true, DatabaseEngine $engine = DatabaseEngine::Postgres, ?RecordingEventDispatcher $dispatcher = null): RdsAuthDriver
+    private function driver(FakeDriver $fake, ?string $iamUsername, ?string $secretArn, bool $cached = true, DatabaseEngine $engine = DatabaseEngine::Postgres, ?RecordingEventDispatcher $dispatcher = null, ?CacheItemPoolInterface $pool = null): RdsAuthDriver
     {
         $tokens = new RdsIamTokenProvider(
             'ap-southeast-2',
@@ -552,7 +581,7 @@ final class RdsAuthDriverTest extends TestCase
             ),
         );
 
-        return new RdsAuthDriver($fake, $tokens, $passwords, $iamUsername, $secretArn, $cached ? $this->cache : null, $engine, $dispatcher);
+        return new RdsAuthDriver($fake, $tokens, $passwords, $iamUsername, $secretArn, $cached ? ($pool ?? $this->cache) : null, $engine, $dispatcher);
     }
 
     private function secretValueResponse(string $secretString): MockResponse

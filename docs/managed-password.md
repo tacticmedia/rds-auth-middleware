@@ -83,6 +83,8 @@ It does not fire when:
 
 Connection parameters without a `password` key count as an outdated configured password.
 
+The event fires once per rotation for each cache that misses: once for a pool that every process shares, once per process for a per-process pool, and once per connection without a pool. Connections that miss at the same moment each read the secret and each dispatch. Deduplicate by `secretArn` before a listener alerts a person.
+
 Listeners run synchronously inside `connect()`, after the accepted password is cached. A listener that throws therefore fails the connection, but the cached password survives for the next attempt. A null dispatcher, the default, disables the dispatch.
 
 Any PSR-14 implementation works. Symfony's `EventDispatcher` dispatches the event by class name, so listeners subscribe with `#[AsEventListener(ConfiguredPasswordOutdated::class)]`. Without a framework, a dispatcher can be this small:

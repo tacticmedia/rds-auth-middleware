@@ -29,15 +29,6 @@ final class RdsAuthDriver extends AbstractDriverMiddleware
     private const int TOKEN_CACHE_TTL_SECONDS = 600;
 
     /**
-     * RDS rotates the managed master password in Secrets Manager, but the application
-     * receives its copy through deployment configuration. Between the rotation and the
-     * next deployment the configured password is invalid, so the driver reads the
-     * current password from Secrets Manager and caches it for this period to limit the
-     * read requests.
-     */
-    private const int PASSWORD_CACHE_TTL_SECONDS = 600;
-
-    /**
      * A cache is recommended. Without one, every request or CLI invocation signs a new
      * token, and during a rotation every connection makes one rejected attempt and one
      * Secrets Manager read.
@@ -171,8 +162,9 @@ final class RdsAuthDriver extends AbstractDriverMiddleware
         $fresh = $this->passwords->freshPassword($secretArn);
         $connection = parent::connect([...$params, 'password' => $fresh]);
 
-        // Cache the password only after the database accepts it.
-        $this->remember($key, $fresh, self::PASSWORD_CACHE_TTL_SECONDS);
+        // Cache the password only after the database accepts it. The entry gets no TTL:
+        // the password stays valid until the next rotation, and a rejection replaces it.
+        $this->remember($key, $fresh, null);
 
         // Dispatch also after a rejected cached password: a warm cache never tries the
         // configured password, which can still be outdated.
@@ -265,13 +257,14 @@ final class RdsAuthDriver extends AbstractDriverMiddleware
 
     /**
      * Call only with a credential the database has accepted. PHP has no attribute for
-     * return values, so cachedString() cannot redact the value it returns.
+     * return values, so cachedString() cannot redact the value it returns. A null
+     * $ttlSeconds applies the pool's default lifetime, which is none unless configured.
      */
     private function remember(
         string $key,
         #[\SensitiveParameter]
         string $value,
-        int $ttlSeconds,
+        ?int $ttlSeconds,
     ): void {
         if (!$this->cache instanceof CacheItemPoolInterface) {
             return;
