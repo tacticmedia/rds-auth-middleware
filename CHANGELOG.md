@@ -50,7 +50,8 @@ Initial release.
 - An optional PSR-14 `ConfiguredPasswordOutdated` event that reports a stale deployed password. It carries the secret ARN and the connection facts, never a credential.
 - `DatabaseEngine`, which detects PostgreSQL and MySQL or MariaDB from the wrapped driver to select the default port, the TLS handling, and the [password-rejection rules](docs/database-engines.md).
 
-[Unreleased]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.1.2...HEAD
+[Unreleased]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.1.3...HEAD
+[1.1.3]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.1.2...1.1.3
 [1.1.2]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/tacticmedia/rds-auth-middleware/compare/1.0.1...1.1.0
